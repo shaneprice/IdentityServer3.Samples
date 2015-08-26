@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Web.Mvc;
+using System.Web.Routing;
 using Owin;
 using WebHost.IdSvr;
 using IdentityManager.Configuration;
@@ -36,10 +38,10 @@ namespace WebHost
             Log.Logger = new LoggerConfiguration()
                .MinimumLevel.Debug()
                .WriteTo.Trace()
-               .CreateLogger(); 
-            
-            var connectionString = "MembershipReboot";
+               .CreateLogger();
 
+            var connectionString = "IdentityServer3.MembershipReboot";
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
             app.Map("/admin", adminApp =>
             {
                 var factory = new IdentityManagerServiceFactory();
@@ -59,11 +61,27 @@ namespace WebHost
                 var options = new IdentityServerOptions
                 {
                     SiteName = "IdentityServer3 - UserService-MembershipReboot",
-                
+
                     SigningCertificate = Certificate.Get(),
+
                     Factory = idSvrFactory,
-                    AuthenticationOptions = new AuthenticationOptions{
+                    AuthenticationOptions = new AuthenticationOptions
+                    {
                         IdentityProviders = ConfigureAdditionalIdentityProviders,
+                        LoginPageLinks = new LoginPageLink[] {
+                            new LoginPageLink{
+                                Text = "Register",
+
+                                Href = "localregistration"
+                            }
+                        }
+                    },
+                    EventsOptions = new EventsOptions
+                    {
+                        RaiseSuccessEvents = true,
+                        RaiseErrorEvents = true,
+                        RaiseFailureEvents = true,
+                        RaiseInformationEvents = true
                     }
                 };
 
